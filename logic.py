@@ -2,9 +2,9 @@ import sqlite3
 from config import DATABASE
 
 skills = [ (_,) for _ in (['Coding', 'People skills', 'Cooking', 'Languages'])] # skills that may be needed for different sort of jobs
-professions = [ (_,) for _ in (["Nurse", "Developer", "Teacher", "Cook", "Translator"])]
-jobs_profession = [ (_,) for _ in ([1,2,3,4,5])]
-jobs_skills_id = [ (_,) for _ in ([[2,4], [1,4], [2,4], [3], [2,4] ])]
+professions = [ (_,) for _ in (["Nurse", "Developer", "Teacher", "Cook", "Translator"])] # different jobs
+jobs_profession = [ (_,) for _ in ([1,2,3,4,5])] # Jobs ids (will try to automize later)
+jobs_skills_id = [ (_,) for _ in ([[2,4], [1,4], [2,4], [3], [2,4] ])] # Job-required skill ids (will also try to optimise later)
 class Manager:
     def __init__(self, database):
         self.database = database
@@ -23,13 +23,15 @@ class Manager:
         cur.execute("CREATE TABLE IF NOT EXISTS jobs(id INTEGER PRIMARY KEY, profession INTEGER, skills_id INTEGER, FOREIGN KEY(profession) REFERENCES professions(id), FOREIGN KEY(skills_id) REFERENCES skills(id))")
 
         # main table for the name of the professions
-        cur.execute("CREATE TABLE IF NOT EXISTS professions(id INTEGER PRIMARY KEY, name TEXT)")
+        cur.execute("CREATE TABLE IF NOT EXISTS professions(id INTEGER PRIMARY KEY, name TEXT UNIQUE)")
 
         # main table for skills/interests
-        cur.execute("CREATE TABLE IF NOT EXISTS skills(id INTEGER PRIMARY KEY, skill_name TEXT)")
+        cur.execute("CREATE TABLE IF NOT EXISTS skills(id INTEGER PRIMARY KEY, skill_name TEXT UNIQUE)")
 
         # main table for saving skills of the user
-        cur.execute("CREATE TABLE IF NOT EXISTS user_info(id INTEGER PRIMARY KEY, user_id INTEGER, skills_id INTEGER, FOREIGN KEY(skills_id) REFERENCES skills(id))")
+        cur.execute("CREATE TABLE IF NOT EXISTS user_info(id INTEGER PRIMARY KEY, user_id TEXT, skills_id INTEGER, FOREIGN KEY(skills_id) REFERENCES skills(id))")
+        # user_id is TEXT because I'm using the user's username, which is a string
+
 
         conn.commit() # commit the creation of the databases
         conn.close() #close the connection
@@ -63,13 +65,23 @@ class Manager:
         conn = sqlite3.connect(self.database)
         with conn:
             cur = conn.cursor()
-            cur.execute("SELECT user_id FROM user_info")     
-            return [x[0] for x in cur.fetchall()]
+            cur.execute("SELECT user_id FROM user_info")   
+            # print([x[0] for x in cur.fetchall()]) # BE CAREFUL WITH THIS. 
+            # Basically, cursor has a storage, the storage you acces through .fetchall()
+            # After you dump it all into the print(), it can no longe be written down into the list below.
+            # Because of this, it looks like everything is completely fine, but in actuality the list that you -
+            # Pass into the main.py bot is EMPTY. Just be careful
+            # Make a list out of everyone in the user_info table
+            res =  [x[0] for x in cur.fetchall()] 
+            return res
 
     # function to add users into the database
     def insert_user(self,data):
-        sql = """INSERT OR IGNORE INTO user_info (user_id) values(?)"""
-        self.__executemany(sql,data)
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute("""INSERT OR IGNORE INTO user_info (user_id) values(?)""", (data,))
+        
 
     # function to delete a skill from the users data
     def delete_skill(self, project_id, skill_id):
@@ -81,5 +93,6 @@ if __name__ == '__main__':
     manager = Manager(DATABASE)
     manager.create_tables()
     manager.default_insert()
+    
     # Not sure how to implement auto-insertion of skills for corresponding professions into the jobs table
     # Therefore I inserted them manually
