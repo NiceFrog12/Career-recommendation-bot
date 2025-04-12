@@ -1,12 +1,26 @@
 import telebot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 import time
 from config import TELEBOT_TOKEN, DATABASE
 from logic import *
 
 bot = telebot.TeleBot(TELEBOT_TOKEN)
 
-supported_skills = ["People skills", "Coding", "Cooking", "Multi-lingualism"]
+supported_skills = ["People skills", "Coding", "Cooking", "Languages"]
+
+def gen_markup_rows(rows):
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 1
+    for row in rows:
+        markup.add(InlineKeyboardButton(row, callback_data=row))
+    return markup
+
+def gen_markup_for_delete(rows):
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 1
+    for row in rows:
+        markup.add(InlineKeyboardButton(row, callback_data=row+"del"))
+    return markup
 
 
 @bot.message_handler(commands=['start'])
@@ -35,8 +49,59 @@ def add_user_into_database(message):
     
 @bot.message_handler(commands=['add'])
 def adding_user_skills(message):
-    bot.send_message("Here are all the currently supported skills. Select which ones you possess!")
     # MAKE THIS A CALLBACK QUERY WITH AN InlineKeyboard AND ADD THE SKILL TO THE USER
+    markup = gen_markup_rows(supported_skills)
+    bot.send_message(message.chat.id, "Here are all the currently supported skills. Select which ones you possess!", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: True)
+def add_selected_skill_to_user(call : CallbackQuery):
+    skill = call.data
+    userlist = manager.get_users()
+    cur_user = call.from_user.username
+
+
+    # Check if the user is regsitered
+    if cur_user not in userlist:
+        bot.answer_callback_query(call.id, "You are not yet registered in our database! Use /register to be able to use the command.")
+
+    
+    # Check if it's a callback to delete the skill
+    if skill[-3:] == "del":
+        bot.answer_callback_query(call.id, f"Selected skill: {skill[-3:]}\nDeleting it from the database...")
+        manager.delete_skill(skill, cur_user)
+        time.sleep(1)
+        #bot.answer_callback_query(call.message.chat.id, "Skill succesfully deleted!")
+    # If not, add the skill
+    else:
+        bot.answer_callback_query(call.id,f"Selected skill: {skill}\nAdding it to the database...")
+        manager.insert_skill(skill, cur_user)
+       # bot.answer_callback_query(call.message.chat.id, "Skill succesfully deleted!")
+
+
+@bot.message_handler(commands=['delete'])
+def adding_user_skills(message):
+    # MAKE THIS A CALLBACK QUERY WITH AN InlineKeyboard AND ADD THE SKILL TO THE USER
+    cur_user = message.from_user.username
+    userlist = manager.get_users()
+
+    # Check if the user is in the database
+    if cur_user not in userlist:
+        bot.send_message(message.chat.id, "You are not yet registered in our database! Use /register to be able to use the command.")
+        return
+
+    # See if the user has any skills added
+    cur_user_skills = manager.select_user_skills(cur_user)
+    if not cur_user_skills:
+        bot.send_message(message.chat.id, "You got no skills added yet! Do /add to add some new skills!")
+        return
+
+    user_skills = manager.select_user_skills(cur_user)
+    skills = []
+    print(user_skills)
+    for i in range(len(user_skills)):
+        skills += [user_skills[i][0]]
+    markup = gen_markup_for_delete(skills)
+    bot.send_message(message.chat.id, "Here are all the skills you have. Select which one you'd like to delete!", reply_markup=markup)
 
 
 

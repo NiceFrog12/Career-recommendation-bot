@@ -50,16 +50,47 @@ class Manager:
 
 
     # function to add a skill into users data
-    def insert_project(self, data):
-        sql = """INSERT OR IGNORE INTO user_info (skill_id) values(?)""" # Запиши сюда правильный SQL запрос
-        self.__executemany(sql, data)
+    def insert_skill(self, data, user_id):
+        skillname = "SELECT id FROM skills WHERE skill_name = ?"
+        conn = sqlite3.connect(self.database)
+        cur = conn.cursor()
+        cur.execute(skillname, (data,))
+        skill_id = cur.fetchall()[0][0]
+        #print(skill_id)
+        sql = """INSERT INTO user_info (skills_id, user_id) values(?, ?)"""
+        
+        # Запиши сюда правильный SQL запрос
+        conn.close()
+
+        conn = sqlite3.connect(self.database)
+        cur = conn.cursor()
+        cur.execute(sql, (skill_id, user_id))
+        conn.commit()
+        conn.close()
 
     # Selects all skills tied to a user_id
     def select_user_skills(self,userid):
         conn = sqlite3.connect(self.database)
         cur = conn.cursor()
-        cur.execute(f"SELECT skills_id WHERE user_id = {userid}")
+        cur.execute(f"SELECT skills_id FROM user_info WHERE user_id = ?", (userid,))
+        skill_rows = cur.fetchall()
 
+        skill_ids = [row[0] for row in skill_rows]
+
+        if not skill_ids:
+            return [] # Will make a failstate if user has no skills added yet
+
+        placeholders = ','.join('?' for _ in skill_ids)
+
+        # Selects the actual names of the skills
+        cur.execute(f"SELECT skill_name FROM skills WHERE id IN ({placeholders})", skill_ids)
+        res = cur.fetchall()
+        conn.close()
+        return res
+        
+
+
+   
     # Simply fetches all users
     def get_users(self):
         conn = sqlite3.connect(self.database)
@@ -81,12 +112,53 @@ class Manager:
         with conn:
             cur = conn.cursor()
             cur.execute("""INSERT OR IGNORE INTO user_info (user_id) values(?)""", (data,))
-        
+            
+    def select_based_on_skills(self, userid):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"SELECT skills_id FROM user_info WHERE user_id = {userid}")
+
+            # Copied the code from select_user_skills
+            # This snippet selects all the skills that the user has
+            skill_rows = cur.fetchall()
+
+            skill_ids = [row[0] for row in skill_rows]
+
+            if not skill_ids:
+                return [] # Will make a failstate if user has no skills added yet
+
+            placeholders = ','.join('?' for _ in skill_ids)
+            print(f"Placeholders: {placeholders}") # <---- check if this looks good enough as it is.
+            # Selects the actual names of the skills
+            cur.execute(f"SELECT skill_name FROM skills WHERE id IN ({placeholders})", skill_ids)
+            # End of snippet
+            skill_names = cur.fetchall() # <--- Make the bot say sum like "These are your current skills: {skills}\n"
+                                         #      They overlap with the skills of those professions: {profession} : {skills}
+            print(skill_names)
+
+
+
+
+
 
     # function to delete a skill from the users data
-    def delete_skill(self, project_id, skill_id):
-        sql = """DELETE FROM skills WHERE skill_id = ? AND skill_id = ? """ # Запиши сюда правильный SQL запрос
-        self.__executemany(sql, [(skill_id, project_id)])
+    def delete_skill(self, skill_id, user_id):
+        skill_id = skill_id[:-3] # Delete the "del" at the end, to differentiate between adding and deleting a skill
+        skillname = "SELECT id FROM skills WHERE skill_name = ?"
+        conn = sqlite3.connect(self.database)
+        cur = conn.cursor()
+        cur.execute(skillname, (skill_id,))
+        # print(cur.fetchall()) # YOU DID IT AGAIN, I TOLD YOU TO BE CAREFUL
+        skill_id = cur.fetchall()[0][0]
+
+
+        sql = """DELETE FROM user_info WHERE user_id = ? AND skills_id = ?""" # Запиши сюда правильный SQL запрос
+        #print(skill_id)
+        #print(user_id)
+        cur.execute(sql, (user_id,skill_id))
+        conn.commit()
+        conn.close()
 
 
 if __name__ == '__main__':
