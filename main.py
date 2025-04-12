@@ -64,18 +64,18 @@ def add_selected_skill_to_user(call : CallbackQuery):
     if cur_user not in userlist:
         bot.answer_callback_query(call.id, "You are not yet registered in our database! Use /register to be able to use the command.")
 
-    
+
     # Check if it's a callback to delete the skill
     if skill[-3:] == "del":
         bot.answer_callback_query(call.id, f"Selected skill: {skill[-3:]}\nDeleting it from the database...")
         manager.delete_skill(skill, cur_user)
         time.sleep(1)
-        #bot.answer_callback_query(call.message.chat.id, "Skill succesfully deleted!")
+        bot.send_message(call.message.chat.id, "Skill succesfully deleted!")
     # If not, add the skill
     else:
         bot.answer_callback_query(call.id,f"Selected skill: {skill}\nAdding it to the database...")
         manager.insert_skill(skill, cur_user)
-       # bot.answer_callback_query(call.message.chat.id, "Skill succesfully deleted!")
+        bot.send_message(call.message.chat.id, "Skill succesfully deleted!")
 
 
 @bot.message_handler(commands=['delete'])
