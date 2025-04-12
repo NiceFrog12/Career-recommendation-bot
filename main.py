@@ -143,6 +143,25 @@ def give_job_recommendation(message):
     stringslist = "\n".join(stringslist)
     bot.send_message(message.chat.id, "Here are all the jobs we have found for you based on your skills!\n\n" + stringslist + "\n\nIf you want to check out what your current skills are, type /show")
 
+
+@bot.message_handler(commands=['help'])
+def show_help(message):
+    help_text = (
+        "🛠 **Bot Help Menu**\n\n"
+        "Here's what I can help you with:\n\n"
+        "👉 /start - Start talking to me\n"
+        "👉 /register - Register yourself so I can remember you\n"
+        "👉 /add - Add skills you’re good at\n"
+        "👉 /delete - Delete skills you no longer want listed\n"
+        "👉 /show - Show your currently saved skills\n"
+        "👉 /job or /proffession - Get job suggestions based on your skills\n"
+        "👉 /help - Show this message again anytime\n\n"
+        f"🧠 Supported skills: {", ".join(supported_skills)}\n"
+        "🔁 Use buttons to add or delete skills via inline menus.\n"
+        "\nNeed more help? Just ask!"
+    )
+    bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
+
 if __name__ == "__main__":
     manager = Manager(DATABASE)
     manager.create_tables()
