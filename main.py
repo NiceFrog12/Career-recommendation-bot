@@ -103,7 +103,45 @@ def adding_user_skills(message):
     markup = gen_markup_for_delete(skills)
     bot.send_message(message.chat.id, "Here are all the skills you have. Select which one you'd like to delete!", reply_markup=markup)
 
+@bot.message_handler(commands=['show'])
+def show_user_skills(message):
+    cur_user = message.from_user.username
+    userlist = manager.get_users()
+    # Check if the user is found in the database
+    if cur_user not in userlist:
+        bot.send_message(message.chat.id, "You are not yet registered! Go use /register so that you can use the rest of the commands.")
+        return
+    skills = manager.select_user_skills(cur_user)
+    # Check if the user has any recorded skills
+    if not skills:
+        bot.send_message(message.chat.id, "You haven't got any skills added yet! Pick a skill you're good at using /add")
+        return
+    skills = [i for sub in skills for i in sub] # Found this neat oneliner to combine a list of tuples into a single list
+    skills = ", ".join(skills) # Join the list with all the skills of the user
+    bot.send_message(message.chat.id, f"Here are all your current skills: {skills}")
+    
 
+
+
+@bot.message_handler(commands=['job', 'proffession'])
+def give_job_recommendation(message):
+    cur_user = message.from_user.username
+    userlist = manager.get_users()
+
+
+    # Check if the user is found in the database
+    if cur_user not in userlist:
+        bot.send_message(message.chat.id, "You are not yet registered! Go use /register so that you can use the rest of the commands.")
+        return
+    skills = manager.select_user_skills(cur_user)
+    # Check if the user has any recorded skills
+    if not skills:
+        bot.send_message(message.chat.id, "You haven't got any skills added yet! Pick a skill you're good at using /add")
+        return
+    
+    stringslist = manager.select_based_on_skills(cur_user)
+    stringslist = "\n".join(stringslist)
+    bot.send_message(message.chat.id, "Here are all the jobs we have found for you based on your skills!\n\n" + stringslist + "\n\nIf you want to check out what your current skills are, type /show")
 
 if __name__ == "__main__":
     manager = Manager(DATABASE)

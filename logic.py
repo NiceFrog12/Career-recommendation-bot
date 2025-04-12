@@ -57,7 +57,7 @@ class Manager:
         cur.execute(skillname, (data,))
         skill_id = cur.fetchall()[0][0]
         #print(skill_id)
-        sql = """INSERT INTO user_info (skills_id, user_id) values(?, ?)"""
+        sql = """INSERT OR IGNORE INTO user_info (skills_id, user_id) values(?, ?)"""
         
         # Запиши сюда правильный SQL запрос
         conn.close()
@@ -80,6 +80,7 @@ class Manager:
         if not skill_ids:
             return [] # Will make a failstate if user has no skills added yet
 
+        # Make placeholders for however many skills we'll find
         placeholders = ','.join('?' for _ in skill_ids)
 
         # Selects the actual names of the skills
@@ -117,29 +118,55 @@ class Manager:
         conn = sqlite3.connect(self.database)
         with conn:
             cur = conn.cursor()
-            cur.execute(f"SELECT skills_id FROM user_info WHERE user_id = {userid}")
+            cur.execute(f"SELECT skills_id FROM user_info WHERE user_id = ?", (userid,))
+            skill_ids = cur.fetchall()
 
-            # Copied the code from select_user_skills
-            # This snippet selects all the skills that the user has
-            skill_rows = cur.fetchall()
+            # Fix the tuple formatting a bit
+            skill_ids = [skill[0] for skill in skill_ids]
 
-            skill_ids = [row[0] for row in skill_rows]
-
-            if not skill_ids:
-                return [] # Will make a failstate if user has no skills added yet
-
+            
+            # Make placeholders for however many skills we'll find
             placeholders = ','.join('?' for _ in skill_ids)
-            print(f"Placeholders: {placeholders}") # <---- check if this looks good enough as it is.
-            # Selects the actual names of the skills
-            cur.execute(f"SELECT skill_name FROM skills WHERE id IN ({placeholders})", skill_ids)
-            # End of snippet
-            skill_names = cur.fetchall() # <--- Make the bot say sum like "These are your current skills: {skills}\n"
-                                         #      They overlap with the skills of those professions: {profession} : {skills}
-            print(skill_names)
 
+            cur.execute(f"SELECT profession FROM jobs WHERE skills_id IN ({placeholders})", skill_ids)
 
+            job_ids = cur.fetchall()
+            placeholders = ','.join('?' for _ in job_ids)
+            # Fix the tuple formatting again
+            job_ids = [job[0] for job in job_ids]
 
+          
+            cur.execute(f"SELECT name FROM professions WHERE id IN ({placeholders})", job_ids)
+            job_names = cur.fetchall()
+           
+            result = {}
+            for job, job_name in zip(job_ids, job_names):
+                # Find skills corresponding to the job_id
+                cur.execute(f"SELECT skills_id FROM jobs WHERE profession = ?", (job,))
+                job_skills = cur.fetchall()
+                job_skills = [skill[0] for skill in job_skills]
+                # Format the skills for the job
+                result[job_name[0]] = job_skills
+            res = [] # Make a list to write down the strings into later
+            for job, skills in result.items():
+                
+                
 
+                if not skills:
+                    return [] # Will make a failstate if user has no skills added yet
+
+                # Make placeholders for however many skills we'll find
+                placeholders = ','.join('?' for _ in skills)
+
+                # Selects the actual names of the skills
+                cur.execute(f"SELECT skill_name FROM skills WHERE id IN ({placeholders})", skills)
+                skill_names = [row[0] for row in cur.fetchall()]  # Extract names from the query result
+
+                res_string = f"Skills for job {job}: {", ".join(skill_names)}"
+                res += [res_string]
+            
+            return res # Returns a list of strings 
+            
 
 
     # function to delete a skill from the users data
