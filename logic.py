@@ -161,8 +161,8 @@ class Manager:
                 # Selects the actual names of the skills
                 cur.execute(f"SELECT skill_name FROM skills WHERE id IN ({placeholders})", skills)
                 skill_names = [row[0] for row in cur.fetchall()]  # Extract names from the query result
-
-                res_string = f"Skills for job {job}: {", ".join(skill_names)}"
+                corresponding_skill = ", ".join(skill_names)
+                res_string = f"Skills for job {job}: {corresponding_skill}"
                 res += [res_string]
             
             return res # Returns a list of strings 

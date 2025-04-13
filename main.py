@@ -1,6 +1,7 @@
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 import time
+import re
 from config import TELEBOT_TOKEN, DATABASE
 from logic import *
 
@@ -146,6 +147,7 @@ def give_job_recommendation(message):
 
 @bot.message_handler(commands=['help'])
 def show_help(message):
+    all_skills = ", ".join(supported_skills)
     help_text = (
         "🛠 **Bot Help Menu**\n\n"
         "Here's what I can help you with:\n\n"
@@ -156,11 +158,57 @@ def show_help(message):
         "👉 /show - Show your currently saved skills\n"
         "👉 /job or /proffession - Get job suggestions based on your skills\n"
         "👉 /help - Show this message again anytime\n\n"
-        f"🧠 Supported skills: {", ".join(supported_skills)}\n"
+        f"🧠 Supported skills: {all_skills}\n"
         "🔁 Use buttons to add or delete skills via inline menus.\n"
         "\nNeed more help? Just ask!"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
+
+
+keywords = {
+    "Developer" : ["coding", "code", "languages", "culture"],
+    "Cook" : ["cooking", "food"],
+    "Nurse" : ["med", "medicine", "doctor", "nursing","care","healthcare"],
+    "Teacher" : ["kids","teaching","sub",],
+    "Translator" : ["language"]
+}
+
+@bot.message_handler(func=lambda message: True)
+def bot_catching_keywords(message):
+    text = str(message.text).lower()
+    print(text)
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text) # Replace special characters with empty spaces
+    message_parts = text.split() # Split the message into parts to look for keywords
+    print(text)
+    print(message_parts)
+    
+
+    # To catch the keywords for later
+    caught = []
+    
+    for jobs, keyword in keywords.items(): # Look through every item in the dictionary
+        # Iterate through every word user sent
+        print("Iterating...")
+        print(f"{jobs}\n--------\n{keyword}")
+        for word in message_parts:
+            # Check if the word is in the dictionary
+            print("the word is: "+word)
+            print(caught)
+            if word in keyword:
+                # If yes, add it to the list
+                caught.append((word,jobs))
+
+    # Check if we caught anything at all
+    if not caught:
+        bot.send_message(message.chat.id, "Heya! I noticed you typing stuff in chat. Do /register to be able to use commands, or do /help if you don't know what I can do.")
+        return
+
+    for keyword, job in caught:
+        bot.send_chat_action(message.chat.id, 'typing')
+        time.sleep(1)
+        bot.send_message(message.chat.id, f"I caught the word '{keyword}', I think that would fit someone like {job}")
+
+
 
 if __name__ == "__main__":
     manager = Manager(DATABASE)
