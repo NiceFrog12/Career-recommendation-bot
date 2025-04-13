@@ -100,7 +100,7 @@ professions = [(x,) for x in (["Nurse", "Developer", "Teacher", "Cook", "Transla
 <br>
 After you have added the name of the job into the bot, you should make a new list inside the list of skills, with the skill ids corresponding to the job. Here is an example:
 
-```
+```python
 jobs_skills_id = [(x,) for x in ([[2,4], [1,4], [2,4], [3], [2,4], [id1, id2], [id3]])]
 ```
 
