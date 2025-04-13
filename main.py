@@ -160,6 +160,7 @@ def show_help(message):
         "👉 /help - Show this message again anytime\n\n"
         f"🧠 Supported skills: {all_skills}\n"
         "🔁 Use buttons to add or delete skills via inline menus.\n"
+        "You can also type some words in chat. If I find something interesting, I might give you a tip!\n"
         "\nNeed more help? Just ask!"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
@@ -167,9 +168,9 @@ def show_help(message):
 
 keywords = {
     "Developer" : ["coding", "code", "languages", "culture"],
-    "Cook" : ["cooking", "food"],
+    "Cook" : ["cooking", "food", "kitchen", "taste"],
     "Nurse" : ["med", "medicine", "doctor", "nursing","care","healthcare"],
-    "Teacher" : ["kids","teaching","sub",],
+    "Teacher" : ["kids","teaching","sub", "child", "children"],
     "Translator" : ["language"]
 }
 
