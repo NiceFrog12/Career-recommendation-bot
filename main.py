@@ -124,7 +124,7 @@ def show_user_skills(message):
 
 
 
-@bot.message_handler(commands=['job', 'proffession'])
+@bot.message_handler(commands=['job', 'profession'])
 def give_job_recommendation(message):
     cur_user = message.from_user.username
     userlist = manager.get_users()

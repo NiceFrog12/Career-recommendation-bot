@@ -6,10 +6,10 @@ All you need to do is enter your interests and skills.
 
 ## Installation
 To install it you can simply run the following command to clone the repository:
-```python
+```shell
 git clone https://github.com/NiceFrog12/Career-recommendation-bot
 ```
-After that, you need to make a `config.py` file and create two variables. The first one will be called `DATABASE = "nameofyourdatabase.db"`, but remember to add `.db` at the end of the string, so that it becomes a database file. The second variable is `TELEBOT_TOKEN`. It is also supposed to be a string, and you can get your token by talking to @botFather on Telegram!
+After that, you need to make a `config.py` file and create two variables. The first one will be called `DATABASE = "nameofyourdatabase.db"`, but remember to add `.db` at the end of the string, so that it becomes a database file. The second variable is `TELEBOT_TOKEN`. It is also supposed to be a string, and you can get your token by talking to @botFather on Telegram and creating your bot!
 
 ## What can the bot do?
 The current version of the bot has multiple commands to set up your experience.
