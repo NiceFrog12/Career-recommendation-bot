@@ -4,12 +4,12 @@ This bot will help you find a job that works best for you.
 All you need to do is enter your interests and skills.
 
 
-
-To-do List:
-- Make databases that will be interconnected (FK) (DONE)
-- Make certain keys (FK keys) correspond to certain skills (DONE)
-- Make the bot catch certain keywords to recommend certain professions *in a normal chat (DONE)
-- Make a database with professions that correspond to said skills and interests (DONE)
+## Installation
+To install it you can simply run the following command to clone the repository:
+```python
+git clone https://github.com/NiceFrog12/Career-recommendation-bot
+```
+After that, you need to make a `config.py` file and create two variables. The first one will be called `python DATABASE = "nameofyourdatabase.db"`, but remember to add `.db` at the end of the string, so that it becomes a database file. The second variable is `TELEBOT_TOKEN`. It is also supposed to be a string, and you can get your token by talking to @botFather on Telegram!
 
 ## What can the bot do?
 The current version of the bot has multiple commands to set up your experience.
@@ -89,19 +89,19 @@ You will have to create a new query for every skill that corresponds to the job.
 
 #### Adding the job into the bot
 Go to logic.py and there at the very top you will see big one liners. Don't get scared, it's simple! You will have to add an id for a new job (the list that goes 1,2,3,4,5,etc.) like this:
-<br> (all underscores "_" changed to "x" for bug reasons)
+
 ```python
-jobs_profession = [(x,) for x in ([1,2,3,4,5,add,your,ids,here])]
+jobs_profession = [(_,) for _ in ([1,2,3,4,5,add,your,ids,here])]
 ```
 And then you should add the name of the job with that id to another list above it like this:
 ```python
-professions = [(x,) for x in (["Nurse", "Developer", "Teacher", "Cook", "Translator","more","jobs","here"])]
+professions = [(_,) for _ in (["Nurse", "Developer", "Teacher", "Cook", "Translator","more","jobs","here"])]
 ```
 <br>
 After you have added the name of the job into the bot, you should make a new list inside the list of skills, with the skill ids corresponding to the job. Here is an example:
 
 ```python
-jobs_skills_id = [(x,) for x in ([[2,4], [1,4], [2,4], [3], [2,4], [id1, id2], [id3]])]
+jobs_skills_id = [(_,) for _ in ([[2,4], [1,4], [2,4], [3], [2,4], [id1, id2], [id3]])]
 ```
 
 Don't worry if you don't know which ids correspond to which skills. Here is my cheatsheet:
