@@ -47,7 +47,7 @@ def add_user_into_database(message):
     except Exception as e:
         print(e)
         bot.send_message(message.chat.id, "Something went wrong. Please try again, and if the problem persists, contact support.")
-    
+
 @bot.message_handler(commands=['add'])
 def adding_user_skills(message):
     # MAKE THIS A CALLBACK QUERY WITH AN InlineKeyboard AND ADD THE SKILL TO THE USER
@@ -76,7 +76,7 @@ def add_selected_skill_to_user(call : CallbackQuery):
     else:
         bot.answer_callback_query(call.id,f"Selected skill: {skill}\nAdding it to the database...")
         manager.insert_skill(skill, cur_user)
-        bot.send_message(call.message.chat.id, "Skill succesfully deleted!")
+        bot.send_message(call.message.chat.id, "Skill succesfully added!")
 
 
 @bot.message_handler(commands=['delete'])
@@ -120,7 +120,7 @@ def show_user_skills(message):
     skills = [i for sub in skills for i in sub] # Found this neat oneliner to combine a list of tuples into a single list
     skills = ", ".join(skills) # Join the list with all the skills of the user
     bot.send_message(message.chat.id, f"Here are all your current skills: {skills}")
-    
+
 
 
 
@@ -139,7 +139,7 @@ def give_job_recommendation(message):
     if not skills:
         bot.send_message(message.chat.id, "You haven't got any skills added yet! Pick a skill you're good at using /add")
         return
-    
+
     stringslist = manager.select_based_on_skills(cur_user)
     stringslist = "\n".join(stringslist)
     bot.send_message(message.chat.id, "Here are all the jobs we have found for you based on your skills!\n\n" + stringslist + "\n\nIf you want to check out what your current skills are, type /show")
@@ -156,7 +156,7 @@ def show_help(message):
         "👉 /add - Add skills you’re good at\n"
         "👉 /delete - Delete skills you no longer want listed\n"
         "👉 /show - Show your currently saved skills\n"
-        "👉 /job or /proffession - Get job suggestions based on your skills\n"
+        "👉 /job or /profession - Get job suggestions based on your skills\n"
         "👉 /help - Show this message again anytime\n\n"
         f"🧠 Supported skills: {all_skills}\n"
         "🔁 Use buttons to add or delete skills via inline menus.\n"
@@ -182,11 +182,11 @@ def bot_catching_keywords(message):
     message_parts = text.split() # Split the message into parts to look for keywords
     print(text)
     print(message_parts)
-    
+
 
     # To catch the keywords for later
     caught = []
-    
+
     for jobs, keyword in keywords.items(): # Look through every item in the dictionary
         # Iterate through every word user sent
         print("Iterating...")
